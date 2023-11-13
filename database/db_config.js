@@ -1,6 +1,6 @@
-import knex from "knex";
-import { development } from "./knexfile";
+import knex from 'knex'
+import { development } from './knexfile.js'
 
-const connection = knex(development);
 
-export default connection;
+const connection = knex(development)
+export default connection
