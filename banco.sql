@@ -1,9 +1,19 @@
+DROP DATABASE gravacoes;
 CREATE DATABASE gravacoes;
 USE gravacoes;
 
-CREATE TABLE gravacoes (
-  id int(11) PRIMARY KEY AUTO_INCREMENT,
-  arquivo varchar(255) NOT NULL,
-  data datetime NOT NULL,
-  quadra varchar(50) NOT NULL
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+CREATE TABLE record (
+  id int PRIMARY KEY AUTO_INCREMENT,
+  file varchar(255),
+  data datetime,
+  court varchar(50)
+);
+
+CREATE TABLE clips(
+  id int PRIMARY KEY AUTO_INCREMENT,
+  file varchar(255),
+  timestamp datetime,
+  record_id INT NOT NULL,
+  FOREIGN KEY (record_id) REFERENCES record(id)
+);
+
