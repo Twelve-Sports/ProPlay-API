@@ -25,3 +25,5 @@ export async function seed(knex) {
     { id: 15, name: 'Quadra 15' },
   ]);
 }
+// npx knex seed:run --knexfile database/knexfile.js
+// Acho que esse é o comando
