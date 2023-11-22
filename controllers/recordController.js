@@ -41,3 +41,58 @@ export const createRec = async (req, res) => {
     }
 }
 
+export const dateNow = async (req, res) => {
+    const court = req.params.court;
+try{
+    const courtEntity = await dbKnex('court').where('id', court).select('*').first();
+    
+
+    if(!courtEntity){
+        return res.status(400).json({
+            message: 'Quadra não encontrada'
+        })
+    }
+
+    const date = new Date();
+    date.setHours(date.getHours() - 3);
+    const dateNow = date.toISOString()
+
+     const dateEntity = await dbKnex('dateNow')
+     .insert({
+            data:dateNow,
+            court_id:courtEntity.id
+        }).select('*');
+    res.status(200).json(dateEntity); 
+
+}catch(err){
+    return res.status(400).json({
+        message: 'Não foi possível criar a data',
+        error: err
+    })
+}
+
+}
+
+export const dateNowList = async (req, res) => {
+    const { courtId } = req.params;
+
+    try {
+        const result = await dbKnex('dateNow')
+            .select('dateNow.data', 'dateNow.id', 'court.name as court_name', 'court.id as court_id')
+            .join('court', 'court.id', '=', 'dateNow.court_id')
+            .where('court.id', courtId);
+
+        if (!result || result.length === 0) {
+            return res.status(400).json({
+                message: 'Nenhuma data encontrada para esta quadra'
+            });
+        }
+
+        res.status(200).json(result);
+    } catch (err) {
+        return res.status(400).json({
+            message: 'Não foi possível obter os dados da data',
+            error: err
+        });
+    }
+};
