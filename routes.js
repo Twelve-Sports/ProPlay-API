@@ -1,6 +1,7 @@
 import { Router, json } from "express";
-import { createRec, dateNow, dateNowList, indexRec } from "./controllers/recordController.js";
+import { createRec, dateNow, dateNowList, getVideo, indexRec, saveVideo} from "./controllers/recordController.js";
 import { createClipe, indexClipe } from "./controllers/clipsController.js";
+import upload from "./middleware/clipesStore.js";
 const router = Router();
 router.use(json())
 
@@ -12,6 +13,8 @@ router.get("/clipe", indexClipe)
       .post("/clipe", createClipe)
 
 router.get("/dateNow/:court", dateNow)
-      .get("/list/:courtId", dateNowList)
+      .get("/list/:courtId", dateNowList) 
+      .post("/up/:dateNowId",upload.single('video'), saveVideo)
+      .get("/video/:courtId", getVideo)
 
 export default router;

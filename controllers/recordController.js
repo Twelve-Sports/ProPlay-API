@@ -1,4 +1,6 @@
 import dbKnex from '../database/db_config.js'
+import path from 'path';
+import fs from 'fs/promises';
 
 export const indexRec = async (req, res) => {
 
@@ -78,7 +80,7 @@ export const dateNowList = async (req, res) => {
 
     try {
         const result = await dbKnex('dateNow')
-            .select('dateNow.data', 'dateNow.id', 'court.name as court_name', 'court.id as court_id')
+            .select('dateNow.data', 'dateNow.id','dateNow.isDone', 'court.name as court_name', 'court.id as court_id')
             .join('court', 'court.id', '=', 'dateNow.court_id')
             .where('court.id', courtId);
 
@@ -96,3 +98,61 @@ export const dateNowList = async (req, res) => {
         });
     }
 };
+
+ export const saveVideo = async (req, res) => {
+    const { dateNowId } = req.params;
+    
+    const video = req.file.path
+
+
+  try{
+    console.log(video);
+    console.log(dateNowId);
+    const result = await dbKnex('clips').insert({
+        file: video,
+        dateNow_id: dateNowId
+    });
+
+    const dateNowTrue = await dbKnex('dateNow').where('id', dateNowId).update({
+        isDone: true
+    });
+
+    res.status(200).json(result);
+  }
+    catch(err){
+        return res.status(400).json({
+            message: 'Não foi possível salvar o vídeo',
+            error: err.message
+        });
+    }
+
+ }
+
+ export const getVideo = async (req, res) => {
+    const { courtId } = req.params;
+
+    try {
+        const result = await dbKnex('clips')
+            .select('clips.file', 'dateNow.data', 'court.name as court_name')
+            .join('dateNow', 'dateNow.id', '=', 'clips.dateNow_id')
+            .join('court', 'court.id', '=', 'dateNow.court_id')
+            .where('court.id', courtId);
+
+        if (!result || result.length === 0) {
+            return res.status(400).json({
+                message: 'Nenhum vídeo encontrado para esta quadra'
+            });
+        }
+
+        res.status(200).json(result);
+    } catch (err) {
+        return res.status(400).json({
+            message: 'Não foi possível obter os dados do vídeo',
+            error: err
+        });
+    }
+
+}
+
+
+
