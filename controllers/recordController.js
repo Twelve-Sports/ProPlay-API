@@ -217,4 +217,88 @@ export const getVideoByDayAndHour = async (req, res) => {
     }
 }
 
+export const getCourtWhenHaveVideoInDay = async (req, res) => {
+    const { date } = req.body;
+
+
+    try {
+        const formattedDate = format(utcToZonedTime(parseISO(date), 'UTC'), 'yyyy-MM-dd');
+
+        const result = await dbKnex('clips')
+            .select('court.id', 'court.name')
+            .join('dateNow', 'dateNow.id', '=', 'clips.dateNow_id')
+            .join('court', 'court.id', '=', 'dateNow.court_id')
+            .whereRaw('DATE(dateNow.data) = ?', [formattedDate])
+            .groupBy('court.id');
+
+        if (!result || result.length === 0) {
+            return res.status(400).json({
+                message: `Nenhuma quadra encontrada com vídeo na data ${formattedDate}`
+            });
+        }
+
+        res.status(200).json(result);
+    } catch (err) {
+        return res.status(400).json({
+            message: 'Não foi possível obter os dados do vídeo',
+            error: err
+        });
+    }
+}
+
+export const getCourtWhenHaveVideoInDayAndHour = async (req, res) => {
+    const { date, hour } = req.body;
+
+    try {
+        const formattedDate = format(utcToZonedTime(parseISO(date), 'UTC'), 'yyyy-MM-dd');
+
+        const result = await dbKnex('clips')
+            .select('court.id', 'court.name')
+            .join('dateNow', 'dateNow.id', '=', 'clips.dateNow_id')
+            .join('court', 'court.id', '=', 'dateNow.court_id')
+            .whereRaw('DATE_FORMAT(dateNow.data, "%Y-%m-%d") = ?', [formattedDate])
+            .whereRaw('HOUR(dateNow.data) = ?', [hour - 3])
+            .groupBy('court.id');
+
+        if (!result || result.length === 0) {
+            return res.status(400).json({
+                message: `Nenhuma quadra encontrada com vídeo na data ${formattedDate} e hora ${hour}`
+            });
+        }
+
+        res.status(200).json(result);
+    } catch (err) {
+        return res.status(400).json({
+            message: 'Não foi possível obter os dados do vídeo',
+            error: err
+        });
+    }
+}
+
+export const getVideoByDayAllCourts = async (req, res) => {
+    const { date } = req.body;
+
+    try {
+        const formattedDate = format(utcToZonedTime(parseISO(date), 'UTC'), 'yyyy-MM-dd');
+
+        const result = await dbKnex('clips')
+            .select('clips.file','dateNow.data' ,dbKnex.raw('extract(hour from dateNow.data) as hour'), 'court.name as court_name', 'court.id as court_id')
+            .join('dateNow', 'dateNow.id', '=', 'clips.dateNow_id')
+            .join('court', 'court.id', '=', 'dateNow.court_id')
+            .whereRaw('DATE(dateNow.data) = ?', [formattedDate]);
+
+        if (!result || result.length === 0) {
+            return res.status(400).json({
+                message: `Nenhum vídeo encontrado para a data ${formattedDate}`
+            });
+        }
+
+        res.status(200).json(result);
+    } catch (err) {
+        return res.status(400).json({
+            message: 'Não foi possível obter os dados do vídeo',
+            error: err
+        });
+    }
+}
 
