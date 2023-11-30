@@ -1,5 +1,5 @@
 import { Router, json } from "express";
-import { createRec, dateNow, dateNowList, getCourtWhenHaveVideoInDay, getCourtWhenHaveVideoInDayAndHour, getVideo, getVideoByDay, getVideoByDayAllCourts, getVideoByDayAndHour, indexRec, saveVideo} from "./controllers/recordController.js";
+import { createRec, dateNow, dateNowList, getCourtWhenHaveVideoInDay, getCourtWhenHaveVideoInDayAndHour, getVideo, getVideoByDay, getVideoByDayAllCourts, getVideoByDayAndHour, getVideoByDayAndHourAllCourts, indexRec, saveVideo} from "./controllers/recordController.js";
 import { createClipe, indexClipe } from "./controllers/clipsController.js";
 import upload from "./middleware/clipesStore.js";
 const router = Router();
@@ -21,5 +21,6 @@ router.get("/dateNow/:court", dateNow)
       .get("/haveCourtDay/", getCourtWhenHaveVideoInDay)
       .get("/haveCourtHour/", getCourtWhenHaveVideoInDayAndHour)
       .get ("/allVideoDay/",getVideoByDayAllCourts)
+      .post("/allVideoDayAllCourts", getVideoByDayAndHourAllCourts)
 
 export default router;

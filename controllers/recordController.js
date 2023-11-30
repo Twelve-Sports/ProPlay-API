@@ -161,7 +161,8 @@ export const getVideoByDay = async (req, res) => {
         const formattedDate = format(utcToZonedTime(parseISO(date), 'UTC'), 'yyyy-MM-dd');
 
         const result = await dbKnex('clips')
-            .select('clips.file', 'dateNow.data', 'court.name as court_name', 'court.id as court_id')
+            .select('clips.file', 'dateNow.data', 'court.name as court_name', 
+            'court.id as court_id')
             .join('dateNow', 'dateNow.id', '=', 'clips.dateNow_id')
             .join('court', 'court.id', '=', 'dateNow.court_id')
             .where('court.id', courtId)
@@ -204,7 +205,9 @@ export const getVideoByDayAndHour = async (req, res) => {
             });
         }
 
-        res.status(200).json(result);
+        const totalClips = result.length;
+
+        res.status(200).json({ totalClips, videos: result });
     } catch (err) {
         return res.status(400).json({
             message: 'Não foi possível obter os dados do vídeo',
@@ -278,7 +281,8 @@ export const getVideoByDayAllCourts = async (req, res) => {
         const formattedDate = format(utcToZonedTime(parseISO(date), 'UTC'), 'yyyy-MM-dd');
 
         const result = await dbKnex('clips')
-            .select('clips.file','dateNow.data' ,dbKnex.raw('extract(hour from dateNow.data) as hour'), 'court.name as court_name', 'court.id as court_id')
+            .select('clips.file', 'dateNow.data', dbKnex.raw('extract(hour from dateNow.data) as hour'),
+                'court.name as court_name', 'court.id as court_id')
             .join('dateNow', 'dateNow.id', '=', 'clips.dateNow_id')
             .join('court', 'court.id', '=', 'dateNow.court_id')
             .whereRaw('DATE(dateNow.data) = ?', [formattedDate]);
@@ -289,7 +293,10 @@ export const getVideoByDayAllCourts = async (req, res) => {
             });
         }
 
-        res.status(200).json(result);
+        const totalClips = result.length;
+
+        
+        res.status(200).json({ totalClips, videos: result });
     } catch (err) {
         return res.status(400).json({
             message: 'Não foi possível obter os dados do vídeo',
@@ -298,3 +305,33 @@ export const getVideoByDayAllCourts = async (req, res) => {
     }
 }
 
+export const getVideoByDayAndHourAllCourts = async (req, res) => {
+    const { date, hour } = req.body;
+
+    try {
+        const formattedDate = format(utcToZonedTime(parseISO(date), 'UTC'), 'yyyy-MM-dd');
+
+        const result = await dbKnex('clips')
+            .select('clips.file', 'dateNow.data', dbKnex.raw('extract(hour from dateNow.data) as hour'),
+                'court.name as court_name', 'court.id as court_id')
+            .join('dateNow', 'dateNow.id', '=', 'clips.dateNow_id')
+            .join('court', 'court.id', '=', 'dateNow.court_id')
+            .whereRaw('DATE_FORMAT(dateNow.data, "%Y-%m-%d") = ?', [formattedDate])
+            .whereRaw('HOUR(dateNow.data) = ?', [hour - 3]);
+
+        if (!result || result.length === 0) {
+            return res.status(200).json({
+                message: `Nenhum vídeo encontrado para a data ${formattedDate} e hora ${hour}`
+            });
+        }
+
+        const totalClips = result.length;
+
+        res.status(200).json({ totalClips, videos: result });
+    } catch (err) {
+        return res.status(400).json({
+            message: 'Não foi possível obter os dados do vídeo',
+            error: err
+        });
+    }
+}
