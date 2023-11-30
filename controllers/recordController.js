@@ -2,9 +2,6 @@ import dbKnex from '../database/db_config.js'
 import { format, parseISO } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 
-
-
-
 export const indexRec = async (req, res) => {
 
 try{
@@ -106,7 +103,6 @@ export const dateNowList = async (req, res) => {
     const { dateNowId } = req.params;
     
     const video = req.file.path
-
 
   try{
     console.log(video);
