@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx nodemon app",
-    "migration": "npx knex seed:run --knexfile database/knexfile.js"
+    "migration": "node -r dotenv/config ./node_modules/knex/bin/cli.js seed:run --knexfile database/knexfile.js"
   },
   "keywords": [],
   "author": "",
