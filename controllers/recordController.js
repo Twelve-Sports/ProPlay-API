@@ -276,34 +276,43 @@ export const getCourtWhenHaveVideoInDayAndHour = async (req, res) => {
 
 export const getVideoByDayAllCourts = async (req, res) => {
     const { date } = req.body;
-
+  
     try {
-        const formattedDate = format(utcToZonedTime(parseISO(date), 'UTC'), 'yyyy-MM-dd');
-
-        const result = await dbKnex('clips')
-            .select('clips.file', 'dateNow.data', dbKnex.raw('extract(hour from dateNow.data) as hour'),
-                'court.name as court_name', 'court.id as court_id')
-            .join('dateNow', 'dateNow.id', '=', 'clips.dateNow_id')
-            .join('court', 'court.id', '=', 'dateNow.court_id')
-            .whereRaw('DATE(dateNow.data) = ?', [formattedDate]);
-
-        if (!result || result.length === 0) {
-            return res.status(400).json({
-                message: `Nenhum vídeo encontrado para a data ${formattedDate}`
-            });
-        }
-
-        const totalClips = result.length;
-
-        
-        res.status(200).json({ totalClips, videos: result });
-    } catch (err) {
+      const formattedDate = format(utcToZonedTime(parseISO(date), 'UTC'), 'yyyy-MM-dd');
+  
+      const result = await dbKnex('clips')
+        .select(
+          'clips.file',
+          'dateNow.data',
+          dbKnex.raw('extract(hour from dateNow.data) as hour'),
+          'court.name as court_name',
+          'court.id as court_id'
+        )
+        .join('dateNow', 'dateNow.id', '=', 'clips.dateNow_id')
+        .join('court', 'court.id', '=', 'dateNow.court_id')
+        .whereRaw('DATE(dateNow.data) = ?', [formattedDate]);
+  
+      if (!result || result.length === 0) {
         return res.status(400).json({
-            message: 'Não foi possível obter os dados do vídeo',
-            error: err
+          message: `Nenhum vídeo encontrado para a data ${formattedDate}`,
         });
+      }
+  
+      // Count the total number of videos for each hour
+      const totalClipsByHour = result.reduce((acc, video) => {
+        const hourWithMinutes = `${video.hour}:00`;
+        acc[hourWithMinutes] = (acc[hourWithMinutes] || 0) + 1;
+        return acc;
+      }, {});
+  
+      res.status(200).json({ totalClipsByHour });
+    } catch (err) {
+      return res.status(400).json({
+        message: 'Não foi possível obter os dados do vídeo',
+        error: err,
+      });
     }
-}
+  };
 
 export const getVideoByDayAndHourAllCourts = async (req, res) => {
     const { date, hour } = req.body;
