@@ -48,3 +48,5 @@ As dependências do projeto incluem:
 - knex: Para interagir com o banco de dados.
 - multer: Para lidar com o upload de arquivos.
 - mysql2: Driver MySQL para Node.js.
+
+-- Para usar o banco de dados, crie um .env e ultilize o .env.exemplo para axuliar nas variaveis de ambiante e coloque seus dados
