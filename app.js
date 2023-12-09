@@ -8,7 +8,7 @@ const port = 3002
 
 app.use(cors());
 app.use(routes)
-
+app.use('/videos', express.static('videos'));
 app.use(express.json());
 
 

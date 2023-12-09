@@ -112,7 +112,7 @@ export const dateNowList = async (req, res) => {
         dateNow_id: dateNowId
     });
 
-    const dateNowTrue = await dbKnex('dateNow').where('id', dateNowId).update({
+    await dbKnex('dateNow').where('id', dateNowId).update({
         isDone: true
     });
 
@@ -196,7 +196,7 @@ export const getVideoByDayAndHour = async (req, res) => {
             .join('court', 'court.id', '=', 'dateNow.court_id')
             .where('court.id', courtId)
             .whereRaw('DATE_FORMAT(dateNow.data, "%Y-%m-%d") = ?', [formattedDate])
-            .whereRaw('HOUR(dateNow.data) = ?', [hour - 3]);
+            .whereRaw('HOUR(dateNow.data) = ?', [hour]);
 
         if (!result || result.length === 0) {
             return res.status(400).json({
